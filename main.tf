@@ -1,4 +1,3 @@
-# 1. Terraform Block
 terraform {
   required_providers {
     aws = {
@@ -8,23 +7,22 @@ terraform {
   }
 }
 
-# 2. Provider Configuration
 provider "aws" {
   region = var.aws_region
 }
 
-# 3. Resource Configuration
 resource "aws_s3_bucket" "product_assets" {
-  bucket = "${var.project_name}-${var.environment}-product-assets-hariom-02"
+  bucket = "${var.project_name}-${var.environment}-product-assets-hariom901-arrow"
 
   tags = {
     Environment = var.environment
     Purpose     = "product-assets"
   }
-
 }
+
+# Resource Dependency
 resource "aws_iam_policy" "product_assets_access" {
-  name = "${var.project_name}-${var.environment}-product-assets-access"
+  name = "${var.project_name}-${var.environment}-product-assets-access-hariom901"
 
   policy = jsonencode({
     Version = "2012-10-17"
