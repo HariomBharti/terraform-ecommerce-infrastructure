@@ -8,41 +8,105 @@ terraform {
 }
 
 provider "aws" {
-  region = var.aws_region
+  region = "ap-south-1"
 }
 
-resource "aws_s3_bucket" "product_assets" {
-  bucket = "${var.project_name}-${var.environment}-product-assets-hariom901-arrow"
+# resource "aws_s3_bucket" "product_assets" {
+#   bucket = "ecommerce-${var.environment}-product-assets-hariom901-arrow"
+
+#   tags = {
+#     Environment = var.environment
+#     Purpose     = "product-assets"
+#   }
+# }
+resource "aws_vpc" "main" {
+  cidr_block = "10.0.0.0/16"
 
   tags = {
+    Name        = "ecommerce-${var.environment}-vpc"
     Environment = var.environment
-    Purpose     = "product-assets"
+    Purpose     = "ecommerce-network"
   }
 }
 
 # Resource Dependency
-resource "aws_iam_policy" "product_assets_access" {
-  name = "${var.project_name}-${var.environment}-product-assets-access-hariom901"
+# resource "aws_iam_policy" "product_assets_access" {
+#   name = "ecommerce${var.environment}-product-assets-access-hariom901"
 
-  policy = jsonencode({
-    Version = "2012-10-17"
+#   policy = jsonencode({
+#     Version = "2012-10-17"
 
-    Statement = [
-      {
-        Effect = "Allow"
+#     Statement = [
+#       {
+#         Effect = "Allow"
 
-        Action = [
-          "s3:GetObject",
-          "s3:PutObject"
-        ]
+#         Action = [
+#           "s3:GetObject",
+#           "s3:PutObject"
+#         ]
 
-        Resource = "${aws_s3_bucket.product_assets.arn}/*"
-      }
-    ]
-  })
+#         Resource = "${aws_s3_bucket.product_assets.arn}/*"
+#       }
+#     ]
+#   })
+
+#   tags = {
+#     Environment = var.environment
+#     Purpose     = "product-assets-access"
+#   }
+# }
+
+resource "aws_subnet" "public" {
+  vpc_id            = aws_vpc.main.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "${var.aws_region}a"
+
+  map_public_ip_on_launch = true
 
   tags = {
+    Name        = "ecommerce-${var.environment}-public-subnet"
     Environment = var.environment
-    Purpose     = "product-assets-access"
+    Purpose     = "ecommerce-public-subnet"
+  }
+}
+
+resource "aws_security_group" "web" {
+  name        = "ecommerce-${var.environment}-web-sg"
+  description = "Security group for E-Commerce web application"
+  vpc_id      = aws_vpc.main.id
+
+  tags = {
+    Name        = "ecommerce-${var.environment}-web-sg"
+    Environment = var.environment
+    Purpose     = "ecommerce-web"
+  }
+}
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+
+  owners = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["al2023-ami-*-x86_64"]
+  }
+
+  filter {
+    name   = "state"
+    values = ["available"]
+  }
+}
+
+resource "aws_instance" "web" {
+  ami           = data.aws_ami.amazon_linux.id
+  instance_type = "t3.micro"
+
+  subnet_id              = aws_subnet.public.id
+  vpc_security_group_ids = [aws_security_group.web.id]
+
+  tags = {
+    Name        = "ecommerce-${var.environment}-web"
+    Environment = var.environment
+    Purpose     = "ecommerce-web"
   }
 }
