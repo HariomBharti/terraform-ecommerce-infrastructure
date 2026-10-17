@@ -104,17 +104,20 @@ data "aws_ami" "amazon_linux" {
 }
 
 resource "aws_instance" "web" {
-  ami           = data.aws_ami.amazon_linux.id
-  instance_type = "t3.micro"
-
+  count                  = var.web_instance_count
+  ami                    = data.aws_ami.amazon_linux.id
+  instance_type          = "t3.micro"
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web.id]
 
   tags = {
-    Name        = "ecommerce-${var.environment}-web"
+    Name        = "ecommerce-${var.environment}-web-${count.index + 1}"
     Environment = var.environment
     Purpose     = "ecommerce-web"
   }
 }
 
 data "aws_region" "current" {}
+data "aws_ssm_parameter" "amazon_linux" {
+  name = "/aws/service/ami-amazon-linux-latest/al2023-ami-kernel-default-x86_64"
+}

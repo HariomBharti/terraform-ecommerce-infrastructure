@@ -13,3 +13,7 @@ variable "aws_region" {
   type        = string
   default     = "ap-south-1"
 }
+variable "web_instance_count" {
+  description = "Number of web application EC2 instances"
+  type        = number
+}
