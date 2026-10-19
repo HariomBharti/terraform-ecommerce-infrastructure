@@ -110,10 +110,16 @@ resource "aws_instance" "web" {
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.web_sg.id]
 
+
+
   tags = {
     Name        = "ecommerce-${var.environment}-web-${count.index + 1}"
     Environment = var.web_instance_count
     Purpose     = "ecommerce-web"
+  }
+  lifecycle {
+    create_before_destroy = true
+    replace_triggered_by  = [aws_security_group.web_sg]
   }
 }
 
