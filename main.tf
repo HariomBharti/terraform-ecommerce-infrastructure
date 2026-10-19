@@ -19,11 +19,11 @@ provider "aws" {
 #     Purpose     = "product-assets"
 #   }
 # }
-# resource "aws_s3_bucket" "storage" {
-#   for_each = local.storage_requirements
+resource "aws_s3_bucket" "storage" {
+  for_each = local.storage_requirements
 
-#   bucket = "ecommerce-${var.environment}-${each.value}-hariom901-arrow11"
-# }
+  bucket = "ecommerce-${var.environment}-${each.value}-hariom901-arrow11"
+}
 
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
@@ -112,7 +112,7 @@ resource "aws_instance" "web" {
 
   tags = {
     Name        = "ecommerce-${var.environment}-web-${count.index + 1}"
-    Environment = var.environment
+    Environment = var.web_instance_count
     Purpose     = "ecommerce-web"
   }
 }
