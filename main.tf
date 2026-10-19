@@ -19,11 +19,11 @@ provider "aws" {
 #     Purpose     = "product-assets"
 #   }
 # }
-resource "aws_s3_bucket" "storage" {
-  for_each = local.storage_requirements
+# resource "aws_s3_bucket" "storage" {
+#   for_each = local.storage_requirements
 
-  bucket = "ecommerce-${var.environment}-${each.value}-hariom901-arrow11"
-}
+#   bucket = "ecommerce-${var.environment}-${each.value}-hariom901-arrow11"
+# }
 
 resource "aws_vpc" "main" {
   cidr_block = "10.0.0.0/16"
@@ -100,6 +100,15 @@ data "aws_ami" "amazon_linux" {
   filter {
     name   = "state"
     values = ["available"]
+  }
+}
+
+module "storage" {
+  source = "./modules/storage"
+
+  buckets = {
+    for key, suffix in local.storage_requirements :
+    key => "ecommerce-${var.environment}-${suffix}-hariom901-arrow11"
   }
 }
 
